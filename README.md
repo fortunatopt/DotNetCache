@@ -69,7 +69,7 @@ This is a .NET class library for caching. It includes methods for general cache 
 
 <td>Gets an item from the cache.</td>
 
-<td> Object T</td>
+<td>Â Object T</td>
 
 </tr>
 
@@ -101,40 +101,42 @@ This is a .NET class library for caching. It includes methods for general cache 
 
 The CacheObject above is a custom class that has the following properties:
 
+```csharp
+
 public class CacheObject {
 
-public string Key { get; set; } 
+public string Key { get; set; }Â 
 
-public object Value { get; set; } 
+public object Value { get; set; }Â 
 
-public string Area { get; set; } 
+public string Area { get; set; }Â 
 
 public string Owner { get; set; }
 
 }
+
+```
 
 The Area and Owner are derived from the Key. For this reason, the Key should be structure as such:
 
 area_owner ie. UserProfile_jsmith
 
 **Here are some usage examples for the Options:**
+```csharp
 
 Caching.ClearCache();
-
 Caching.RemoveObjectFromCache("UserProfile_jsmith");
-
 Caching.SetObjectInCache<vwGetOrgProfile>("UserProfile_jsmith", 5, jSmith);
-
 var allCache = Caching.GetAllCache()
-
 var success = Caching.RemoveFilteredCache(jsmith, true);
-
 User data = Caching.GetObjectFromCache<User>("UserProfile_jsmith", 5, () => GetUserMethod("jSmith"));
 
-Understanding the GetObjectFromCache method:
+```
 
-The GetObjectFromCache method takes a function as the final parameter. This function is to get the item from the original source in the event that it does not exist in the cache. There is nothing special about that function, other than the types of the two must match.
+Understanding theÂ GetObjectFromCache method:
 
-**What's coming?** 
+TheÂ GetObjectFromCache method takes a function as the final parameter. This function is to get the item from the original source in the event that it does not exist in the cache. There is nothing special about that function, other than the types of the two must match.
 
-Implementation of Sliding Expiration instead of Absolute as an option throughout the utility.
+**What's coming?**Â 
+
+Implementation ofÂ Sliding Expiration instead of Absolute as an option throughout the utility.
