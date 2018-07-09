@@ -139,4 +139,4 @@ The GetObjectFromCache method takes a function as the final parameter. This fun
 
 **What's coming?** 
 
-Implementation of Sliding Expiration instead of Absolute as an option throughout the utility.
+Just implemented sliding cache option throughout. I am still thinking about what's next.'
