@@ -8,7 +8,7 @@ namespace CacheUtility
     /// <summary>
     /// Caching Utilities
     /// </summary>
-    public class Caching
+    public static class Caching
     {
         /// <summary>
         /// Clear all items in the Cache
@@ -25,11 +25,41 @@ namespace CacheUtility
         /// Remove a single item from the Cache
         /// </summary>
         /// <param name="cacheItemName"></param>
-        public static void RemoveObjectFromCache(string cacheItemName)
+        public static void RemoveObjectFromCache(this string cacheItemName)
         {
             // This removes an item from the cache by name
             ObjectCache cache = MemoryCache.Default;
             cache.Remove(cacheItemName);
+        }
+        public static void RefreshObjectFromCache<T>(this string cacheItemName, int cacheTimeInMinutes, Func<T> objectSettingFunction, bool slidingExpiration = false)
+        {
+            // get the item from the cache
+            ObjectCache cache = MemoryCache.Default;
+            T cachedObject = (T)cache.Get(cacheItemName, null);
+            //var cachedObject = (T)cache[cacheItemName];
+            // remove item from the cache
+            if (cachedObject != null)
+                cache.Remove(cacheItemName);
+
+            // set the expiration policy
+            CacheItemPolicy policy = new CacheItemPolicy();
+            if (slidingExpiration == true)
+            {
+                policy.SlidingExpiration = TimeSpan.FromMinutes(cacheTimeInMinutes);
+            }
+            else
+            {
+                policy.AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(cacheTimeInMinutes);
+            }
+            // set the item in the cache
+            try
+            {
+                cachedObject = objectSettingFunction();
+            }
+            catch { }
+
+            if (cachedObject != null)
+                cache.Set(cacheItemName, cachedObject, policy);
         }
         /// <summary>
         /// Add an item to the Cache
@@ -38,7 +68,7 @@ namespace CacheUtility
         /// <param name="cacheItemName">Name for the item</param>
         /// <param name="cacheTimeInMinutes">Minutes before expiration</param>
         /// <param name="newCacheObject">Data for the item to be added to the Cache</param>
-        public static void SetObjectInCache<T>(string cacheItemName, int cacheTimeInMinutes, T newCacheObject, bool slidingExpiration = false)
+        public static void SetObjectInCache<T>(this string cacheItemName, int cacheTimeInMinutes, T newCacheObject, bool slidingExpiration = false)
         {
             // This sets an item in the cache
             ObjectCache cache = MemoryCache.Default;
@@ -68,11 +98,11 @@ namespace CacheUtility
         /// <param name="objectSettingFunction">Function to be called to set the item if it doesn't exist</param>
         /// <param name="slidingExpiration">This allows for the use of Sliding Expiration instead of Absolute so the cache object will persist longer</param>
         /// <returns>Returns the object of the type specified</returns>
-        public static T GetObjectFromCache<T>(string cacheItemName, int cacheTimeInMinutes, Func<T> objectSettingFunction, bool slidingExpiration = false)
+        public static T GetObjectFromCache<T>(this string cacheItemName, int cacheTimeInMinutes, Func<T> objectSettingFunction, bool slidingExpiration = false)
         {
             // get the item from the cache
             ObjectCache cache = MemoryCache.Default;
-            var cachedObject = (T)cache[cacheItemName];
+            T cachedObject = (T)cache.Get(cacheItemName, null);
             // if the item doesn't exist, this will get and set it
             if (cachedObject == null)
             {
@@ -115,7 +145,7 @@ namespace CacheUtility
         /// <param name="filter"></param>
         /// <param name="isOwner"></param>
         /// <returns></returns>
-        public static bool RemoveFilteredCache(string filter, bool isOwner = false)
+        public static bool RemoveFilteredCache(this string filter, bool isOwner = false)
         {
             // get the cache
             List<CacheObject> c = new List<CacheObject>();
@@ -133,7 +163,7 @@ namespace CacheUtility
 
             // remove the item
             foreach (var f in c)
-                Caching.RemoveObjectFromCache(f.Key);
+                f.Key.RemoveObjectFromCache();
 
             return true;
         }
