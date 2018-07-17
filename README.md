@@ -139,11 +139,18 @@ area_owner ie. UserProfile_jsmith
 
 Caching.ClearCache();
 "UserProfile_jsmith".RemoveObjectFromCache();
-"UserProfile_jsmith".RefreshObjectFromCache<vwGetOrgProfile>(5, jSmith);
-"UserProfile_jsmith".SetObjectInCache<vwGetOrgProfile>(5, jSmith);
+"UserProfile_jsmith".RefreshObjectFromCache<UserProfile>(5, () => GetUserProfileMethod("jSmith"));
+"UserProfile_jsmith".SetObjectInCache<UserProfile>(5, jSmith);
 var allCache = Caching.GetAllCache()
 var success = jsmith.RemoveFilteredCache(true);
 User data = "UserProfile_jsmith".GetObjectFromCache<User>(5, () => GetUserMethod("jSmith"));
+
+```
+
+**You can also use some methods as a fire and forget, as I do the RefreshObjectFromCache method:**
+```csharp
+
+Task.Run(() => $"UserProfile_jsmith".RefreshObjectFromCache<List<UserProfile>>(5, () => GetUserProfileMethod("jSmith")));
 
 ```
 
