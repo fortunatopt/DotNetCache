@@ -19,7 +19,7 @@ namespace CacheUtility
             ObjectCache cache = MemoryCache.Default;
             List<string> keys = cache.Select(s => s.Key).ToList();
             foreach (string key in keys)
-                cache.Remove(key);
+                cache.Remove(key.ToLower());
         }
         /// <summary>
         /// Remove a single item from the Cache
@@ -29,17 +29,24 @@ namespace CacheUtility
         {
             // This removes an item from the cache by name
             ObjectCache cache = MemoryCache.Default;
-            cache.Remove(cacheItemName);
+            cache.Remove(cacheItemName.ToLower());
+        }
+        public static void RemoveObectsFromCache(this List<string> cacheItems)
+        {
+            // This removes items from the cache by name
+            ObjectCache cache = MemoryCache.Default;
+            foreach (string cacheItem in cacheItems)
+                cache.Remove(cacheItem.ToLower());
         }
         public static void RefreshObjectFromCache<T>(this string cacheItemName, int cacheTimeInMinutes, Func<T> objectSettingFunction, bool slidingExpiration = false)
         {
             // get the item from the cache
             ObjectCache cache = MemoryCache.Default;
-            T cachedObject = (T)cache.Get(cacheItemName, null);
+            T cachedObject = (T)cache.Get(cacheItemName.ToLower(), null);
             //var cachedObject = (T)cache[cacheItemName];
             // remove item from the cache
             if (cachedObject != null)
-                cache.Remove(cacheItemName);
+                cache.Remove(cacheItemName.ToLower());
 
             // set the expiration policy
             CacheItemPolicy policy = new CacheItemPolicy();
@@ -59,7 +66,7 @@ namespace CacheUtility
             catch { }
 
             if (cachedObject != null)
-                cache.Set(cacheItemName, cachedObject, policy);
+                cache.Set(cacheItemName.ToLower(), cachedObject, policy);
         }
         /// <summary>
         /// Add an item to the Cache
@@ -72,10 +79,10 @@ namespace CacheUtility
         {
             // This sets an item in the cache
             ObjectCache cache = MemoryCache.Default;
-            var cachedObject = (T)cache[cacheItemName];
+            var cachedObject = (T)cache[cacheItemName.ToLower()];
             // remove cached item if it already exists
             if (cachedObject != null)
-                cache.Remove(cacheItemName);
+                cache.Remove(cacheItemName.ToLower());
             // set cache expiration time
             CacheItemPolicy policy = new CacheItemPolicy();
             if (slidingExpiration == true)
@@ -87,7 +94,7 @@ namespace CacheUtility
                 policy.AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(cacheTimeInMinutes);
             }
             // set item in cache
-            cache.Set(cacheItemName, newCacheObject, policy);
+            cache.Set(cacheItemName.ToLower(), newCacheObject, policy);
         }
         /// <summary>
         /// Funtion that takes a generic type to get and set an item in the cache
@@ -102,7 +109,7 @@ namespace CacheUtility
         {
             // get the item from the cache
             ObjectCache cache = MemoryCache.Default;
-            T cachedObject = (T)cache.Get(cacheItemName, null);
+            T cachedObject = (T)cache.Get(cacheItemName.ToLower(), null);
             // if the item doesn't exist, this will get and set it
             if (cachedObject == null)
             {
@@ -123,7 +130,7 @@ namespace CacheUtility
                 }
                 catch { }
                 if (cachedObject != null)
-                    cache.Set(cacheItemName, cachedObject, policy);
+                    cache.Set(cacheItemName.ToLower(), cachedObject, policy);
             }
             return cachedObject;
         }
@@ -136,7 +143,7 @@ namespace CacheUtility
             List<CacheObject> c = new List<CacheObject>();
             ObjectCache cache = MemoryCache.Default;
 
-            c = cache.Select(s => new CacheObject { Key = s.Key, Value = s.Value }).ToList();
+            c = cache.Select(s => new CacheObject { Key = s.Key.ToLower(), Value = s.Value }).ToList();
             return c;
         }
         /// <summary>
@@ -154,18 +161,26 @@ namespace CacheUtility
             // get the item by either the owner or the area
             if (isOwner == true)
             {
-                c = cache.Select(s => new CacheObject { Key = s.Key, Value = s.Value }).ToList().Where(w => w.Owner == filter).ToList();
+                c = cache.Select(s => new CacheObject { Key = s.Key.ToLower(), Value = s.Value }).ToList().Where(w => w.Owner == filter.ToLower()).ToList();
             }
             else
             {
-                c = cache.Select(s => new CacheObject { Key = s.Key, Value = s.Value }).ToList().Where(w => w.Area == filter).ToList();
+                c = cache.Select(s => new CacheObject { Key = s.Key.ToLower(), Value = s.Value }).ToList().Where(w => w.Area == filter.ToLower()).ToList();
             }
 
             // remove the item
             foreach (var f in c)
-                f.Key.RemoveObjectFromCache();
+                f.Key.ToLower().RemoveObjectFromCache();
 
             return true;
+        }
+        public static void RemoveAllWildcard(this string cacheItemName)
+        {
+            // This will remove all items from the cache, but leave the cache object
+            ObjectCache cache = MemoryCache.Default;
+            List<string> keys = cache.Where(w => w.Key.ToLower().Contains(cacheItemName.ToLower())).Select(s => s.Key).ToList();
+            foreach (string key in keys)
+                cache.Remove(key);
         }
     }
 }
